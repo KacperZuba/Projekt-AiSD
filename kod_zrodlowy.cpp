@@ -83,62 +83,62 @@ void algorytmBruteForce(vector<int> tab) {
 }
 
 void algorytmOptymalny(vector<int> &tab) {
-	if(tab.size() == 2) {
-		cout<<"Maksymalny iloczyn: "<<tab[0] * tab[1]<<endl;
-		cout<<"["<<tab[0]<<", "<<tab[1]<<"]";
-		return;
-	}
-	
-    pair<int,int> para_dodatnia = {INT_MIN, INT_MIN};
-	pair<int,int> para_ujemna   = {INT_MAX, INT_MAX};
-	
-	for (int x : tab) {
-	    if (x > 0) {
-	        if (x > para_dodatnia.first) {
-	            para_dodatnia.second = para_dodatnia.first;
-	            para_dodatnia.first = x;
-	        } else if (x > para_dodatnia.second) {
-	            para_dodatnia.second = x;
-	        }
-	    }
-	
-	    if (x < 0) {
-	        if (x < para_ujemna.first) {
-	            para_ujemna.second = para_ujemna.first;
-	            para_ujemna.first = x;
-	        } else if (x < para_ujemna.second) {
-	            para_ujemna.second = x;
-	        }
-	    }
-	}
-	
-	int iloczyn_dodatnie = (para_dodatnia.second != INT_MIN
-	                        ? para_dodatnia.first * para_dodatnia.second
-	                        : INT_MIN);
-	
-	int iloczyn_ujemne = (para_ujemna.second != INT_MAX
-	                      ? para_ujemna.first * para_ujemna.second
-	                      : INT_MIN);
-	                      
-	cout<<"Maksymalny iloczyn: "<<(iloczyn_dodatnie > iloczyn_ujemne
-		? iloczyn_dodatnie
-		: iloczyn_ujemne)<<endl;
-		
-	cout << "Pary czynnikow:\n";
-	if(iloczyn_dodatnie >= iloczyn_ujemne) {
-		cout<<"["<<para_dodatnia.first<<", "<< para_dodatnia.second << "]\n";
-	} 
-	
-	if(iloczyn_ujemne >= iloczyn_dodatnie) {
-		cout<<"["<<para_ujemna.first<<", "<< para_ujemna.second << "]\n";
-	}
+    if(tab.size() == 2) {
+        cout<<"Maksymalny iloczyn: "<<tab[0] * tab[1]<<endl;
+        cout<<"["<<tab[0]<<", "<<tab[1]<<"]";
+        return;
+    }
+
+    pair<int,int> para_dodatnia = {INT_MIN, INT_MIN}; 
+    pair<int,int> para_ujemna   = {INT_MAX, INT_MAX};
+
+    for (int x : tab) {
+    	// na potrzeby działania algorytmu traktujemy 0 jako liczbe dodatnią
+        if (x >= 0) {
+            if (x > para_dodatnia.first) {
+                para_dodatnia.second = para_dodatnia.first;
+                para_dodatnia.first = x;
+            } else if (x > para_dodatnia.second) {
+                para_dodatnia.second = x;
+            }
+        }
+
+        if (x < 0) {
+            if (x < para_ujemna.first) {
+                para_ujemna.second = para_ujemna.first;
+                para_ujemna.first = x;
+            } else if (x < para_ujemna.second) {
+                para_ujemna.second = x;
+            }
+        }
+    }
+
+    int iloczyn_dodatnie = (para_dodatnia.second != INT_MIN
+                            ? para_dodatnia.first * para_dodatnia.second
+                            : INT_MIN);
+
+    int iloczyn_ujemne = (para_ujemna.second != INT_MAX
+                          ? para_ujemna.first * para_ujemna.second
+                          : INT_MIN);
+
+    cout<<"Maksymalny iloczyn: "<<(iloczyn_dodatnie > iloczyn_ujemne
+        ? iloczyn_dodatnie
+        : iloczyn_ujemne)<<endl;
+
+    cout << "Pary czynnikow:\n";
+    if(iloczyn_dodatnie >= iloczyn_ujemne) {
+        cout<<"["<<para_dodatnia.first<<", "<< para_dodatnia.second << "]\n";
+    }
+    if(iloczyn_ujemne >= iloczyn_dodatnie) {
+        cout<<"["<<para_ujemna.first<<", "<< para_ujemna.second << "]\n";
+    }
 }
 
 
 int main() {
 	srand(time(NULL)); // inicjalizacja ziarna generatora liczb pseudolosowych
 	
-	int n = 20;
+	int n = 10;
 	
 	vector<int> tab(n);
 	wypelnijTabliceLosowymiLiczbamiZPrzedzialu(tab.data(), n, -10, 10);
