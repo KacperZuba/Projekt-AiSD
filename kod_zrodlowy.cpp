@@ -16,7 +16,6 @@ void wypelnijTabliceLosowymiLiczbamiZPrzedzialu(
 	T* tab, int dlugosc_tablicy,
 	T dolna_granica, T gorna_granica
 	) {
-		srand(time(NULL));
 		for(int i = 0; i < dlugosc_tablicy; i++) {
 			tab[i] = dolna_granica + (rand() % (gorna_granica - dolna_granica + 1));
 		}
@@ -137,6 +136,7 @@ void algorytmOptymalny(vector<int> &tab) {
 
 
 int main() {
+	srand(time(NULL)); // inicjalizacja ziarna generatora liczb pseudolosowych
 	
 	int n = 20;
 	
