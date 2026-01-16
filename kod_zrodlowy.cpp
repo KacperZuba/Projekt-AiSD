@@ -33,18 +33,33 @@ void wypiszTablice(T* tablica, int dlugosc_tablicy) {
 	cout<<']';
 }
 
+template <typename T>
+struct WynikBenchmarku {
+    long long czas_ms;
+    T wartosc;
+};
+
 template <typename F, typename... Args>
-long long zmierz_czas_wykonania(F&& funkcja, Args&&... args){
-    auto start = chrono::high_resolution_clock::now();
+auto benchmark(F&& funkcja, Args&&... args)
+-> WynikBenchmarku<typename std::result_of<F(Args...)>::type>
+{
+    using namespace std::chrono;
+    using ReturnType = typename std::result_of<F(Args...)>::type;
 
-    std::forward<F>(funkcja)(std::forward<Args>(args)...);
+    auto start = high_resolution_clock::now();
 
-    auto stop = chrono::high_resolution_clock::now();
+    ReturnType wynik =
+        std::forward<F>(funkcja)(std::forward<Args>(args)...);
 
-    return chrono::duration_cast<chrono::milliseconds>(stop - start).count();
+    auto stop = high_resolution_clock::now();
+
+    return {
+        duration_cast<milliseconds>(stop - start).count(),
+        std::move(wynik)
+    };
 }
 
-void algorytmBruteForce(vector<int> tab) {
+vector<pair<int, int>> algorytmBruteForce(vector<int> tab) {
 	int dlugosc_tablicy = tab.size(), iloczyn_maks = tab[0] * tab[1];
 	vector<pair<int, int>> pary_czynnikow;
 	
@@ -74,19 +89,14 @@ void algorytmBruteForce(vector<int> tab) {
 	    }
 	 }
 	
-	cout << "Maksymalny iloczyn: " << iloczyn_maks << "\n";
-	cout << "Pary czynnikow:\n";
-	
-	for (const auto &p : pary_czynnikow) {
-		cout<<"["<<p.first<<", "<< p.second << "]\n";
-	}
+	return pary_czynnikow;
 }
 
-void algorytmOptymalny(vector<int> &tab) {
+vector<pair<int, int>> algorytmOptymalny(vector<int> &tab) {
     if(tab.size() == 2) {
-        cout<<"Maksymalny iloczyn: "<<tab[0] * tab[1]<<endl;
-        cout<<"["<<tab[0]<<", "<<tab[1]<<"]";
-        return;
+        return vector<pair<int, int>>{
+			{tab.at(0), tab.at(1)}
+		};
     }
 
     pair<int,int> para_dodatnia = {INT_MIN, INT_MIN}; 
@@ -121,24 +131,16 @@ void algorytmOptymalny(vector<int> &tab) {
                           ? para_ujemna.first * para_ujemna.second
                           : INT_MIN);
 
-    cout<<"Maksymalny iloczyn: "<<(iloczyn_dodatnie > iloczyn_ujemne
-        ? iloczyn_dodatnie
-        : iloczyn_ujemne)<<endl;
-
-    cout << "Pary czynnikow:\n";
-    if(iloczyn_dodatnie >= iloczyn_ujemne) {
-        cout<<"["<<para_dodatnia.first<<", "<< para_dodatnia.second << "]\n";
-    }
-    if(iloczyn_ujemne >= iloczyn_dodatnie) {
-        cout<<"["<<para_ujemna.first<<", "<< para_ujemna.second << "]\n";
-    }
+    if(iloczyn_dodatnie > iloczyn_ujemne) return vector<pair<int, int>>{ para_dodatnia };
+    else if(iloczyn_ujemne > iloczyn_dodatnie) return vector<pair<int, int>>{ para_ujemna };
+    else return vector<pair<int, int>> {para_dodatnia, para_ujemna};
 }
 
 
 int main() {
 	srand(time(NULL)); // inicjalizacja ziarna generatora liczb pseudolosowych
 	
-	int n = 10;
+	int n = 20;
 	
 	vector<int> tab(n);
 	wypelnijTabliceLosowymiLiczbamiZPrzedzialu(tab.data(), n, -10, 10);
@@ -148,19 +150,29 @@ int main() {
 		return 1;
 	}
 	
-	cout<<"Wygenerowana tablica: ";
+	cout<<"Wygenerowana tablica:"<<endl;
 	wypiszTablice(tab.data(), n);
-	cout<<endl<<endl;
+	cout<<endl;
 	
 	cout<<"Algorytm optymalny:"<<endl;
-	long long czas_wykonania_optymalny = zmierz_czas_wykonania(algorytmOptymalny, tab);
-	cout<<"Czas wykonania: "<< czas_wykonania_optymalny<<" ms."<<endl;
+	auto wynik_benchmarku_optymalnego = benchmark(algorytmOptymalny, tab);
+	cout<<"Czas wykonania: "<< wynik_benchmarku_optymalnego.czas_ms<<" ms."<<endl;
 	cout<<"------"<<endl;
 	
 	cout<<"Algorytm bruteforce:"<<endl;
-	long long czas_wykonania_brute_force = zmierz_czas_wykonania(algorytmBruteForce, tab);
-	cout<<"Czas wykonania: "<< czas_wykonania_brute_force<<" ms."<<endl;
-	cout<<"------";
+	auto wynik_benchmarku_brute_force = benchmark(algorytmBruteForce, tab);
+	cout<<"Czas wykonania: "<< wynik_benchmarku_brute_force.czas_ms<<" ms."<<endl;
+	cout<<"------"<<endl;
+	
+	vector<pair<int, int>> pary_czynnikow = wynik_benchmarku_brute_force.wartosc;
+	int maks_iloczyn = pary_czynnikow.at(0).first * pary_czynnikow.at(0).second;
+	
+	cout<<"Maksymalny iloczyn: "<<maks_iloczyn<<endl;
+	cout<<"Pary czynnikow: ";
+	for(int i = 0; i < pary_czynnikow.size(); i++) {
+		pair<int, int> para = pary_czynnikow.at(i);
+		cout<<"("<<para.first<<", "<<para.second<<") ";
+	}
 	                        
 	return 0;
 }
